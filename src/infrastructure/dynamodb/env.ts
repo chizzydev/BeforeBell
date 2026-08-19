@@ -39,15 +39,26 @@ export interface BeforeBellDynamoConfig {
   tableName: string;
 }
 
-
 export function getBeforeBellDynamoConfig(
-  env:
-    NodeJS.ProcessEnv =
-      process.env,
+  env?: NodeJS.ProcessEnv,
 ): BeforeBellDynamoConfig {
+  const source =
+    env ?? {
+      BEFOREBELL_AWS_REGION:
+        process.env
+          .BEFOREBELL_AWS_REGION,
+
+      AWS_REGION:
+        process.env.AWS_REGION,
+
+      BEFOREBELL_DYNAMODB_TABLE:
+        process.env
+          .BEFOREBELL_DYNAMODB_TABLE,
+    };
+
   const parsed =
     dynamoEnvironmentSchema.safeParse(
-      env,
+      source,
     );
 
   if (!parsed.success) {
