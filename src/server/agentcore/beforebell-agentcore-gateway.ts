@@ -162,10 +162,12 @@ let agentCoreClient:
   BedrockAgentCoreClient |
   undefined;
 
-
 function getRegion():
   string {
   const configured =
+    process.env
+      .BEFOREBELL_AWS_REGION
+      ?.trim() ||
     process.env.AWS_REGION
       ?.trim();
 
@@ -174,7 +176,6 @@ function getRegion():
     DEFAULT_REGION
   );
 }
-
 
 function getRuntimeArn():
   string {

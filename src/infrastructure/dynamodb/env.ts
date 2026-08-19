@@ -2,12 +2,25 @@ import {
   z,
 } from "zod";
 
+
+const DEFAULT_REGION =
+  "us-east-1";
+
+
+const optionalRegionSchema =
+  z.string()
+    .trim()
+    .min(1)
+    .optional();
+
+
 const dynamoEnvironmentSchema =
   z.object({
+    BEFOREBELL_AWS_REGION:
+      optionalRegionSchema,
+
     AWS_REGION:
-      z.string()
-        .trim()
-        .min(1),
+      optionalRegionSchema,
 
     BEFOREBELL_DYNAMODB_TABLE:
       z.string()
@@ -20,10 +33,12 @@ const dynamoEnvironmentSchema =
         ),
   });
 
+
 export interface BeforeBellDynamoConfig {
   region: string;
   tableName: string;
 }
+
 
 export function getBeforeBellDynamoConfig(
   env:
@@ -51,7 +66,10 @@ export function getBeforeBellDynamoConfig(
 
   return {
     region:
-      parsed.data.AWS_REGION,
+      parsed.data
+        .BEFOREBELL_AWS_REGION ??
+      parsed.data.AWS_REGION ??
+      DEFAULT_REGION,
 
     tableName:
       parsed.data

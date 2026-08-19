@@ -1,0 +1,22 @@
+version: 1
+
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+
+    build:
+      commands:
+        - env | grep -e '^BEFOREBELL_AWS_REGION=' -e '^BEFOREBELL_DYNAMODB_TABLE=' -e '^BEFOREBELL_AGENTCORE_RUNTIME_ARN=' -e '^BEFOREBELL_ENABLE_DEMO_MUTATIONS=' >> .env.production
+        - npm run build
+
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
