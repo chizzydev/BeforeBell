@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# BeforeBell local AWS/development evidence
+/beforebell-bedrock-policy.json
+/beforebell-npm-audit-*.json
+/beforebell-*-snapshot.txt
+/next15-*-agentcore-*.json
+/web-route-*.json
