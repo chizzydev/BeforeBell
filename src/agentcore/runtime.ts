@@ -19,6 +19,15 @@ import {
   createBeforeBellAgent,
 } from "@/agent/beforebell-agent";
 
+import type {
+  RequestExceptionDecisionClockStage,
+} from "@/agent/tools/request-exception-decision";
+
+import {
+  BEFOREBELL_DEMO_CLOCK,
+  getBeforeBellDemoCase,
+} from "@/demo/beforebell-demo";
+
 import {
   createBeforeBellDynamoClients,
 } from "@/infrastructure/dynamodb/client";
@@ -442,6 +451,52 @@ const store =
       config.tableName,
   });
 
+function getRequestExceptionDecisionNow(
+  stage:
+    RequestExceptionDecisionClockStage,
+  caseId:
+    string,
+): Date {
+  const definition =
+    getBeforeBellDemoCase(
+      caseId,
+    );
+
+  /**
+   * Non-demo runtime work uses the real clock.
+   *
+   * Synthetic demo cases stay entirely inside the deterministic
+   * September 14 demonstration timeline.
+   */
+  if (!definition) {
+    return new Date();
+  }
+
+  const timestamp =
+    stage ===
+    "waiting"
+      ? BEFOREBELL_DEMO_CLOCK
+          .humanDecisionRequestedAt
+      : BEFOREBELL_DEMO_CLOCK
+          .humanDecisionApprovedAt;
+
+  const result =
+    new Date(
+      timestamp,
+    );
+
+  if (
+    Number.isNaN(
+      result.getTime(),
+    )
+  ) {
+    throw new Error(
+      `BeforeBell demo ${stage} timestamp is invalid.`,
+    );
+  }
+
+  return result;
+}
 
 const sessions =
   new Map<
@@ -454,10 +509,15 @@ function createSessionState():
 RuntimeSessionState {
   return {
     agent:
-      createBeforeBellAgent(
-        store,
-      ),
-
+  createBeforeBellAgent(
+    store,
+    {
+      requestExceptionDecision: {
+        now:
+          getRequestExceptionDecisionNow,
+      },
+    },
+  ),
     busy:
       false,
 

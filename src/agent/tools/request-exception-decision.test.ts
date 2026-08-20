@@ -6,6 +6,7 @@ import {
 
 import {
   buildExceptionDecisionRequest,
+  recordExceptionDecisionWaitingActivity,
   recordValidatedExceptionSelection,
 } from "@/agent/tools/request-exception-decision";
 
@@ -143,6 +144,84 @@ describe("buildExceptionDecisionRequest", () => {
       ),
     ).toBe(true);
   });
+
+it("records the human-judgment waiting boundary exactly once across resume-style replay", async () => {
+  const store =
+    createScenarioBStore();
+
+  const request =
+    await buildExceptionDecisionRequest(
+      store,
+      {
+        caseId:
+          scenarioBAbsence.id,
+      },
+    );
+
+  if (
+    !request.success ||
+    !request.data
+  ) {
+    throw new Error(
+      "Expected authoritative Scenario B exception request.",
+    );
+  }
+
+  await recordExceptionDecisionWaitingActivity(
+    store,
+    request.data,
+    new Date(
+      "2026-09-14T06:09:00.000Z",
+    ),
+  );
+
+  /**
+   * Strands re-enters the tool on resume.
+   * A later wall clock must not produce duplicate waiting evidence
+   * or rewrite the timestamp of the original boundary.
+   */
+  await recordExceptionDecisionWaitingActivity(
+    store,
+    request.data,
+    new Date(
+      "2026-09-14T06:11:00.000Z",
+    ),
+  );
+
+  const activity =
+    await store.listActivityByCase(
+      scenarioBAbsence.id,
+    );
+
+  expect(activity).toHaveLength(
+    1,
+  );
+
+  expect(
+    activity[0],
+  ).toMatchObject({
+    caseId:
+      scenarioBAbsence.id,
+
+    timestamp:
+      "2026-09-14T06:09:00.000Z",
+
+    actorType:
+      "agent",
+
+    action:
+      "human_exception_decision_requested",
+
+    toolName:
+      "request_exception_decision",
+
+    status:
+      "waiting",
+
+    summary:
+      "BeforeBell reached a policy boundary for P5 and is waiting for administrator judgment.",
+  });
+});
 
   it("does not mutate assignments, decisions, offers, or activity while preparing human judgment", async () => {
     const store =

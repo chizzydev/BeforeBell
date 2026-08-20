@@ -40,8 +40,17 @@ export const BEFOREBELL_DEMO_EXTERNAL_SUBSTITUTE = {
 
 
 export const BEFOREBELL_DEMO_CLOCK = {
+  humanDecisionRequestedAt:
+    "2026-09-14T06:09:00.000Z",
+
+  humanDecisionApprovedAt:
+    "2026-09-14T06:10:00.000Z",
+
   externalSubstituteFulfilledAt:
     "2026-09-14T06:12:00.000Z",
+
+  externalSubstituteReconciledAt:
+    "2026-09-14T06:12:01.000Z",
 } as const;
 
 export const BEFOREBELL_DEMO_SCENARIO_B_BASELINE = {

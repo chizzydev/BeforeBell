@@ -372,12 +372,14 @@ export function HumanDecisionPanel({
         );
 
 
-      setState({
+            setState({
         phase:
           "choosing",
 
         pending,
       });
+
+      router.refresh();
     } catch (
       error
     ) {

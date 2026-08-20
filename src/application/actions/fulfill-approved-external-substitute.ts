@@ -35,6 +35,9 @@ export interface FulfillApprovedExternalSubstituteInput {
   externalSubstituteId: string;
 
   now: Date;
+
+reconciliationNow?:
+  Date;
 }
 
 export interface FulfillApprovedExternalSubstituteData {
@@ -196,6 +199,41 @@ export async function fulfillApprovedExternalSubstitute(
       retryable: false,
     };
   }
+
+const reconciliationNow =
+  input.reconciliationNow ??
+  input.now;
+
+if (
+  Number.isNaN(
+    reconciliationNow
+      .getTime(),
+  )
+) {
+  return {
+    success: false,
+    code:
+      "invalid_reconciliation_time",
+    message:
+      "Coverage reconciliation time is invalid.",
+    retryable: false,
+  };
+}
+
+if (
+  reconciliationNow
+    .getTime() <
+  input.now.getTime()
+) {
+  return {
+    success: false,
+    code:
+      "reconciliation_time_before_fulfillment",
+    message:
+      "Coverage reconciliation cannot precede external-substitute fulfillment.",
+    retryable: false,
+  };
+}
 
   const externalSubstituteId =
     input.externalSubstituteId.trim();
@@ -367,7 +405,7 @@ export async function fulfillApprovedExternalSubstitute(
             decision.caseId,
 
           now:
-            input.now,
+  reconciliationNow,
 
           activityEventId:
             reconciliationActivityEventId,
@@ -532,7 +570,7 @@ export async function fulfillApprovedExternalSubstitute(
               decision.caseId,
 
             now:
-              input.now,
+  reconciliationNow,
 
             activityEventId:
               reconciliationActivityEventId,
@@ -607,7 +645,7 @@ export async function fulfillApprovedExternalSubstitute(
           decision.caseId,
 
         now:
-          input.now,
+  reconciliationNow,
 
         activityEventId:
           reconciliationActivityEventId,

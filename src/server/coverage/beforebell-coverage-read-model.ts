@@ -12,6 +12,7 @@ import {
 
 import type {
   AbsenceCaseStatus,
+  ActivityEvent,
   CoverageOffer,
   PeriodId,
 } from "@/domain/types";
@@ -73,6 +74,35 @@ export interface CoverageOfferView {
     string;
 }
 
+export interface CoverageActivityEventView {
+  eventId:
+    ActivityEvent["eventId"];
+
+  timestamp:
+    ActivityEvent["timestamp"];
+
+  actorType:
+    ActivityEvent["actorType"];
+
+  action:
+    ActivityEvent["action"];
+
+  toolName?:
+    ActivityEvent["toolName"];
+
+  status:
+    ActivityEvent["status"];
+
+  summary:
+    ActivityEvent["summary"];
+
+  durationMs?:
+    ActivityEvent["durationMs"];
+
+  correlationId:
+    ActivityEvent["correlationId"];
+}
+
 export interface CoverageCaseView {
   id:
     string;
@@ -132,8 +162,11 @@ decisionCount:
     PeriodId[];
 };  
 
-  activityCount:
+    activityCount:
     number;
+
+  activityEvents:
+    CoverageActivityEventView[];
 
   needsAdministratorDecision:
     boolean;
@@ -322,6 +355,50 @@ const offerViews:
       ),
     );
 
+const activityViews:
+  CoverageActivityEventView[] =
+    activity.map(
+      (
+        event,
+      ) => ({
+        eventId:
+          event.eventId,
+
+        timestamp:
+          event.timestamp,
+
+        actorType:
+          event.actorType,
+
+        action:
+          event.action,
+
+        ...(event.toolName
+          ? {
+              toolName:
+                event.toolName,
+            }
+          : {}),
+
+        status:
+          event.status,
+
+        summary:
+          event.summary,
+
+        ...(event.durationMs !==
+        undefined
+          ? {
+              durationMs:
+                event.durationMs,
+            }
+          : {}),
+
+        correlationId:
+          event.correlationId,
+      }),
+    );
+
   const coveredPeriods =
     [
       ...new Set(
@@ -500,7 +577,10 @@ decisionCount:
   : {}),
 
 activityCount:
-  activity.length,
+  activityViews.length,
+
+activityEvents:
+  activityViews,
 
     needsAdministratorDecision,
   };

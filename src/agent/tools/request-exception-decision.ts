@@ -67,8 +67,18 @@ interface HumanExceptionDecisionResponse {
   optionId: string;
 }
 
+export type RequestExceptionDecisionClockStage =
+  | "waiting"
+  | "approved";
+
+
 export interface RequestExceptionDecisionToolOptions {
-  now?: () => Date;
+  now?: (
+    stage:
+      RequestExceptionDecisionClockStage,
+    caseId:
+      string,
+  ) => Date;
 
   /**
    * Synthetic administrator identity for the local hackathon workflow.
@@ -316,6 +326,109 @@ export async function buildExceptionDecisionRequest(
   };
 }
 
+function buildExceptionDecisionWaitingActivityEventId(
+  request:
+    ExceptionDecisionRequestData,
+): string {
+  const optionIds =
+    request.options
+      .map(
+        (option) =>
+          option.optionId,
+      )
+      .sort();
+
+  return buildStableOperationId(
+    "activity",
+    [
+      "human-exception-decision-requested",
+      request.caseId,
+      ...optionIds,
+    ].join(":"),
+  );
+}
+
+
+export async function recordExceptionDecisionWaitingActivity(
+  store:
+    BeforeBellStore,
+  request:
+    ExceptionDecisionRequestData,
+  now:
+    Date,
+): Promise<void> {
+  const eventId =
+    buildExceptionDecisionWaitingActivityEventId(
+      request,
+    );
+
+  const existingEvents =
+    await store.listActivityByCase(
+      request.caseId,
+    );
+
+  const existing =
+    existingEvents.find(
+      (event) =>
+        event.eventId ===
+        eventId,
+    );
+
+  if (
+    !existing &&
+    Number.isNaN(
+      now.getTime(),
+    )
+  ) {
+    throw new Error(
+      "Human-decision waiting evidence received an invalid timestamp.",
+    );
+  }
+
+  /**
+   * On Strands resume the tool is entered again before context.interrupt()
+   * returns the human response.
+   *
+   * Preserve the first authoritative timestamp so appendActivity can verify
+   * an exact idempotent replay instead of conflicting with a later wall clock.
+   */
+  const timestamp =
+    existing?.timestamp ??
+    now.toISOString();
+
+  await store.appendActivity({
+    eventId,
+
+    caseId:
+      request.caseId,
+
+    timestamp,
+
+    actorType:
+      "agent",
+
+    action:
+      "human_exception_decision_requested",
+
+    toolName:
+      "request_exception_decision",
+
+    status:
+      "waiting",
+
+    summary:
+      `BeforeBell reached a policy boundary for ${request.unresolvedPeriodIds.join(
+        ", ",
+      )} and is waiting for administrator judgment.`,
+
+    correlationId:
+      buildStableOperationId(
+        "correlation",
+        request.caseId,
+      ),
+  });
+}
+
 /**
  * Revalidates a human-selected option against current authoritative state
  * immediately before persistence.
@@ -446,7 +559,10 @@ export function createRequestExceptionDecisionTool(
   store: BeforeBellStore,
   options: RequestExceptionDecisionToolOptions = {},
 ) {
-  const getNow =
+ const getNow:
+  NonNullable<
+    RequestExceptionDecisionToolOptions["now"]
+  > =
     options.now ??
     (() => new Date());
 
@@ -599,6 +715,14 @@ export function createRequestExceptionDecisionTool(
        * On resume, Strands returns the administrator's response from this
        * exact interrupt call.
        */
+      await recordExceptionDecisionWaitingActivity(
+  store,
+  decisionRequest,
+  getNow(
+    "waiting",
+    decisionRequest.caseId,
+  ),
+);
       const humanResponse =
         context.interrupt<
           HumanExceptionDecisionResponse
@@ -645,10 +769,11 @@ export function createRequestExceptionDecisionTool(
           optionId:
             parsedResponse.data
               .optionId,
-
           now:
-            getNow(),
-
+       getNow(
+       "approved",
+      decisionRequest.caseId,
+  ),
           decidedBy,
         },
       );

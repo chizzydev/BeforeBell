@@ -36,6 +36,7 @@ import {
 
 import {
   createRequestExceptionDecisionTool,
+  type RequestExceptionDecisionToolOptions,
 } from "@/agent/tools/request-exception-decision";
 
 export const BEFOREBELL_SYSTEM_PROMPT = `
@@ -196,8 +197,16 @@ If no authoritative exception options exist, report the unresolved periods and
 state that no currently permitted exception path is available.
 `.trim();
 
+export interface BeforeBellAgentOptions {
+  requestExceptionDecision?:
+    RequestExceptionDecisionToolOptions;
+}
+
 export function createBeforeBellAgent(
-  store: BeforeBellStore,
+  store:
+    BeforeBellStore,
+  options:
+    BeforeBellAgentOptions = {},
 ) {
   return new Agent({
     name:
@@ -238,8 +247,10 @@ export function createBeforeBellAgent(
       ),
 
       createRequestExceptionDecisionTool(
-        store,
-      ),
+    store,
+    options
+    .requestExceptionDecision,
+     ),
     ],
 
     /**

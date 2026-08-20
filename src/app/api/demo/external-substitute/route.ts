@@ -233,6 +233,12 @@ export async function POST(
               BEFOREBELL_DEMO_CLOCK
                 .externalSubstituteFulfilledAt,
             ),
+
+         reconciliationNow:
+  new Date(
+    BEFOREBELL_DEMO_CLOCK
+      .externalSubstituteReconciledAt,
+  ),
         },
       );
 
