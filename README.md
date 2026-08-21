@@ -230,6 +230,39 @@ The UI presents operational evidence from authoritative application state:
 
 DynamoDB remains the system of record.
 
+### Scenario B authoritative evidence trace
+
+The Scenario B case command center makes the human/machine boundary visible directly in the product.
+
+For the centerpiece external-substitute path, BeforeBell persists the following authoritative sequence:
+
+```text
+06:09:00  agent          waiting
+           human_exception_decision_requested
+
+06:10:00  administrator  succeeded
+           human_exception_decision_approved
+
+06:12:00  system         succeeded
+           coverage_assignment_created
+
+06:12:01  system         succeeded
+           coverage_case_status_updated
+```
+
+This sequence demonstrates an important invariant:
+
+> **Administrator approval is authorization, not execution.**
+
+At 06:10, the administrator has approved the external-substitute path, but P5 is still unassigned. Only the later trusted fulfillment step creates Morgan Ellis's P5 assignment and allows the case to become resolved.
+
+The case command center keeps human operations separate from machine operations:
+
+- current assignments remain a persisted state snapshot;
+- administrator judgment is shown as a human control boundary;
+- workflow events are shown as a persisted orchestration trace;
+- resolved cases replay completed evidence rather than presenting historical events as if they were still live.
+
 ---
 
 ## Project structure
@@ -315,7 +348,7 @@ npm audit
 
 Current automated baseline:
 
-**27 test files · 185 tests**
+**27 test files · 186 tests**
 
 ---
 

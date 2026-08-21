@@ -112,9 +112,10 @@ export default async function DemoPage() {
             BeforeBell demo
           </h1>
 
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#68736b]">
-            Three synthetic school-coverage scenarios show routine
-            automation, real human judgment, and safe fallback handling.
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#68736b]">
+            Three synthetic school-coverage scenarios show what BeforeBell
+            automates, where it stops for human judgment, and how it safely
+            recovers when the first plan fails.
           </p>
         </div>
 
@@ -151,10 +152,10 @@ export default async function DemoPage() {
             </h2>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-white/55">
-              BeforeBell safely covers routine periods, detects that P5
-              requires genuine administrator judgment, interrupts the live
-              agent, and resumes only after a human selects an authoritative
-              option.
+              BeforeBell covers P2 and P3 through routine policy, detects that
+              P5 crosses a protected-planning boundary, interrupts the live
+              agent, and resumes only after an administrator selects a
+              permitted option.
             </p>
           </div>
 
@@ -191,7 +192,7 @@ export default async function DemoPage() {
           <DemoStep
             number="03"
             title="Human decision"
-            detail="Administrator selects one authoritative option."
+            detail="Administrator selects one permitted option."
           />
 
           <DemoStep
@@ -231,7 +232,7 @@ export default async function DemoPage() {
           number="C"
           title="Safe fallback"
           staffName="Olivia Chen"
-          description="The preferred candidate declines, so BeforeBell excludes that response and safely falls back."
+          description="The preferred candidate declines, so BeforeBell preserves the decline, replans, and safely moves to the next eligible candidate."
           currentCase={
             scenarioC
           }
@@ -264,7 +265,7 @@ export default async function DemoPage() {
 
             <ProofPoint
               title="Authoritative evidence"
-              detail="Cases, decisions, assignments and operational evidence are persisted in DynamoDB."
+              detail="Assignments, human decisions, and workflow events are persisted in DynamoDB."
             />
           </div>
         </div>

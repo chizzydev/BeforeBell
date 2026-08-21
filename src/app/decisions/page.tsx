@@ -66,9 +66,9 @@ export default async function DecisionsPage() {
             Decisions
           </h1>
 
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#68736b]">
-            A durable record of the moments BeforeBell stopped automation
-            and handed genuine judgment to an administrator.
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#68736b]">
+            A durable record of every time BeforeBell reached a policy boundary
+            and handed the decision to an administrator.
           </p>
         </div>
 

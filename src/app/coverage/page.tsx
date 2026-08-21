@@ -162,11 +162,10 @@ export default async function CoveragePage() {
             Today&apos;s coverage workload.
           </h1>
 
-          <p className="mt-4 max-w-[690px] text-sm leading-6 text-[#667178] sm:text-[15px]">
+             <p className="mt-4 max-w-[690px] text-sm leading-6 text-[#667178] sm:text-[15px]">
             Every absence, confirmed assignment,
-            policy boundary and human decision
-            remains visible from one authoritative
-            operational surface.
+            policy boundary, and human decision
+            stays visible in one place.
           </p>
         </div>
 

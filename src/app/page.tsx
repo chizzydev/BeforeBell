@@ -155,12 +155,11 @@ export default async function Home() {
           </h1>
 
           <p className="mt-4 max-w-[700px] text-sm leading-6 text-[#667178] sm:text-[15px]">
-            BeforeBell handles routine
-            coordination automatically,
-            preserves deterministic policy
-            boundaries, and surfaces only
-            the moments that require
-            administrator judgment.
+            BeforeBell handles routine coverage
+            automatically, enforces school policy
+            deterministically, and surfaces only
+            the moments that require administrator
+            judgment.
           </p>
         </div>
 

@@ -190,7 +190,7 @@ export default async function CoverageCasePage({
           />
 
           <CaseMetric
-            label="Authoritative status"
+            label="Case status"
             value={
               coverageCase.status
                 .replaceAll(
@@ -213,12 +213,12 @@ export default async function CoverageCasePage({
               <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
                 <div>
                   <h2 className="text-base font-semibold tracking-[-0.02em] text-[var(--ink)]">
-                    Authoritative assignment snapshot
+                    Current assignment snapshot
                   </h2>
 
                   <p className="mt-1 text-xs leading-5 text-[var(--ink-muted)]">
                     Current coverage state from DynamoDB. Baseline assignments
-                    are state, not fabricated orchestration history.
+                    are persisted state, not reconstructed agent narration.
                   </p>
                 </div>
 
@@ -308,11 +308,10 @@ export default async function CoverageCasePage({
               Evidence, not inference
             </h2>
 
-            <p className="mt-1 text-xs leading-5 text-[var(--ink-muted)]">
-              The case surface is reconstructed from authoritative persisted
-              state rather than assistant narration.
+              <p className="mt-1 text-xs leading-5 text-[var(--ink-muted)]">
+              This case view is reconstructed from persisted application state,
+              not assistant narration.
             </p>
-
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <EvidenceCell
                 label="Assignment records"
@@ -340,7 +339,7 @@ export default async function CoverageCasePage({
               />
 
               <EvidenceCell
-                label="Authoritative store"
+                label="System of record"
                 value="DynamoDB"
               />
             </div>
@@ -568,9 +567,9 @@ function ResolvedBoundaryCard() {
         </div>
 
         <h2 className="mt-4 text-lg font-semibold tracking-[-0.02em] text-white">
-          Coverage is authoritatively resolved.
-        </h2>
-
+        Coverage is fully resolved.
+        </h2>    
+           
         <p className="mt-2 text-sm leading-6 text-white/55">
           Administrator approval and trusted fulfillment remain separate
           evidence. The approved external-substitute path has now executed and
@@ -609,8 +608,8 @@ function ApprovedDecisionCard({
 
         <div className="mt-4 rounded-xl border border-[rgba(225,160,75,0.18)] bg-[rgba(225,160,75,0.06)] p-3">
           <p className="text-xs leading-5 text-white/45">
-            Approval is authoritative, but approval alone does not create a
-            coverage assignment.
+            Approval records the administrator&apos;s decision, but it does not
+            create a coverage assignment.
           </p>
         </div>
       </div>
