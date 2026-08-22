@@ -134,21 +134,39 @@ BeforeBell keeps that decline authoritative, replans without Emma, offers the co
 
 ## Architecture
 
+BeforeBell deliberately separates **agent orchestration, deterministic policy, human judgment, and trusted execution**.
+
+- **Strands Agents + Amazon Bedrock** coordinate the coverage workflow.
+- **Deterministic BeforeBell tools** own eligibility, conflicts, protected planning, assignment safety, and workflow invariants.
+- When routine policy cannot safely finish the work, **Strands HITL interrupts the agent** and hands the decision to an administrator.
+- **Amazon DynamoDB is the system of record** for cases, assignments, human decisions, and workflow evidence.
+- **Administrator approval is authorization, not execution** — trusted fulfillment happens separately and is persisted as its own state transition.
+
 ```mermaid
 flowchart LR
     A[Absence / trusted response] --> B[Next.js application]
     B --> C[BeforeBell server gateway]
     C --> D[Amazon Bedrock AgentCore Runtime]
-    D --> E[AWS Strands Agent]
+    D --> E[Strands Agent / Strands Agents SDK]
+
     E --> F[Amazon Bedrock model]
     E --> G[Deterministic BeforeBell tools]
+
     G --> H[Domain policy + invariants]
     G --> I[(Amazon DynamoDB)]
-    E -->|Policy boundary| J[Strands HITL interruption]
-    J --> K[Administrator decision]
-    K --> D
-    I --> B
+
+    H -->|Exception requires judgment| J[Strands HITL interruption]
+    E -->|Interrupt / resume orchestration| J
+    J --> K[Administrator selects permitted option]
+    K -->|Resume workflow| D
+
+    B -->|Trusted fulfillment after approval| G
+    I -->|Authoritative application state| B
 ```
+
+> **Design principle:** safe routine decisions happen automatically. Judgment stays human.
+
+Scenario B makes the boundary concrete: the administrator's decision is persisted first, P5 remains unassigned, and only a later trusted-fulfillment action creates the final assignment.
 
 ---
 
