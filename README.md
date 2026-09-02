@@ -134,42 +134,108 @@ BeforeBell keeps that decline authoritative, replans without Emma, offers the co
 
 ## Architecture
 
-BeforeBell deliberately separates **agent orchestration, deterministic policy, human judgment, and trusted execution**.
+BeforeBell deliberately separates **agent orchestration, deterministic policy authority, human judgment, and trusted fulfillment**.
 
 - **Strands Agents + Amazon Bedrock** coordinate the coverage workflow.
-- **Deterministic BeforeBell tools** own eligibility, conflicts, protected planning, assignment safety, and workflow invariants.
-- When routine policy cannot safely finish the work, **Strands HITL interrupts the agent** and hands the decision to an administrator.
-- **Amazon DynamoDB is the system of record** for cases, assignments, human decisions, and workflow evidence.
-- **Administrator approval is authorization, not execution** — trusted fulfillment happens separately and is persisted as its own state transition.
+- **Deterministic BeforeBell tools** own eligibility, conflicts, protected planning, assignment safety, final revalidation, and workflow invariants.
+- When routine policy cannot safely finish the work, **Strands HITL interrupts the agent** and hands a bounded decision to an administrator.
+- **Administrator approval is authorization, not execution.** The decision is persisted first; trusted fulfillment happens separately.
+- **Amazon DynamoDB is the system of record** for authoritative cases, assignments, human decisions, and workflow evidence.
 
 ```mermaid
-flowchart LR
-    A[Absence / trusted response] --> B[Next.js application]
-    B --> C[BeforeBell server gateway]
-    C --> D[Amazon Bedrock AgentCore Runtime]
-    D --> E[Strands Agent / Strands Agents SDK]
+flowchart TD
+    INPUT["Absence / trusted response"]
+    WEB["Next.js application"]
+    GATEWAY["BeforeBell server gateway"]
 
-    E --> F[Amazon Bedrock model]
-    E --> G[Deterministic BeforeBell tools]
+    INPUT --> WEB --> GATEWAY
 
-    G --> H[Domain policy + invariants]
-    G --> I[(Amazon DynamoDB)]
+    subgraph AGENT["AGENT ORCHESTRATION"]
+        CORE["Amazon Bedrock<br/>AgentCore Runtime"]
+        STRANDS["Strands Agent<br/>Strands Agents SDK"]
+        MODEL["Amazon Bedrock model"]
 
-    H -->|Exception requires judgment| J[Strands HITL interruption]
-    E -->|Interrupt / resume orchestration| J
-    J --> K[Administrator selects permitted option]
-    K -->|Resume workflow| D
+        CORE --> STRANDS
+        STRANDS --> MODEL
+    end
 
-    B -->|Trusted fulfillment after approval| G
-    I -->|Authoritative application state| B
+    GATEWAY --> CORE
+
+    subgraph POLICY["DETERMINISTIC BEFOREBELL AUTHORITY"]
+        TOOLS["Deterministic<br/>BeforeBell tools"]
+        DOMAIN["Domain policy + invariants<br/>eligibility / conflicts / protected planning / revalidation"]
+        SAFE{"Routine policy<br/>can finish safely?"}
+
+        TOOLS --> DOMAIN --> SAFE
+    end
+
+    STRANDS --> TOOLS
+
+    subgraph ROUTINE["ROUTINE-SAFE EXECUTION"]
+        OFFER["Coverage offer"]
+        ACCEPT["Trusted acceptance"]
+        REVALIDATE["Final availability<br/>revalidation"]
+        ASSIGN["Atomic safe assignment"]
+
+        OFFER --> ACCEPT --> REVALIDATE --> ASSIGN
+    end
+
+    SAFE -->|yes| OFFER
+
+    subgraph HUMAN["HUMAN JUDGMENT BOUNDARY"]
+        HITL["Strands HITL<br/>interruption"]
+        ADMIN["Administrator selects<br/>permitted option"]
+        DECISION["Human decision persisted<br/>authorization only"]
+
+        HITL --> ADMIN --> DECISION
+    end
+
+    SAFE -->|exception requires judgment| HITL
+    STRANDS -. interrupt / resume .-> HITL
+
+    subgraph FULFILL["TRUSTED FULFILLMENT"]
+        RESUME["Resume AgentCore workflow"]
+        EXECUTE["Trusted fulfillment<br/>separate execution step"]
+        FINAL["Final assignment"]
+
+        RESUME --> EXECUTE --> FINAL
+    end
+
+    DECISION --> RESUME
+
+    DB[("Amazon DynamoDB<br/>authoritative cases + assignments +<br/>human decisions + workflow evidence")]
+
+    ASSIGN --> DB
+    DECISION --> DB
+    FINAL --> DB
+    DB -. authoritative application state .-> WEB
 ```
 
 > **Design principle:** safe routine decisions happen automatically. Judgment stays human.
 
-Scenario B makes the boundary concrete: the administrator's decision is persisted first, P5 remains unassigned, and only a later trusted-fulfillment action creates the final assignment.
+### The judgment boundary
+
+```mermaid
+flowchart TD
+    AUTO["ROUTINE POLICY<br/>safe autonomous decisions"]
+    BOUNDARY{{"JUDGMENT BOUNDARY"}}
+    HUMAN["ADMINISTRATOR<br/>selects a permitted exception"]
+    PERSIST["Decision persisted<br/>authorization"]
+    EXEC["TRUSTED FULFILLMENT<br/>separate execution"]
+    ASSIGN["Assignment persisted"]
+
+    AUTO --> BOUNDARY
+    BOUNDARY --> HUMAN
+    HUMAN --> PERSIST
+    PERSIST --> EXEC
+    EXEC --> ASSIGN
+```
+
+**ADMINISTRATOR APPROVAL is authorization, not execution.**
+
+Scenario B makes that boundary concrete: the administrator's decision is persisted first, P5 remains unassigned, and only a later trusted-fulfillment action creates the final assignment.
 
 ---
-
 ## Responsibility boundaries
 
 ### Agent / language model
