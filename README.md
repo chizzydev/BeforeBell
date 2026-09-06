@@ -10,7 +10,7 @@ BeforeBell handles routine teacher-absence coverage automatically and brings in 
 
 ## Judge fast path
 
-**[Try BeforeBell](https://main.d2taas9loyobkr.amplifyapp.com/)** · **[Watch the demo](https://youtu.be/7bp7_NHUqFA)** · **[Read the AWS build story](https://builder.aws.com/content/3IHfF2ty2FJ7ufZRiYsHG0qFSxN/building-beforebell-for-agents-for-humans-autonomous-school-coverage-with-human-judgment)** · **[View the architecture](#architecture)** · **[See the operational proof](#operational-evidence-instead-of-hidden-reasoning)**
+**[Try BeforeBell](https://main.d2taas9lovobkr.amplifyapp.com/)** · **[Watch the demo](https://youtu.be/7bp7_NHUqFA)** · **[Read the AWS build story](https://builder.aws.com/content/3IHfF2ty2FJ7ufZRiYsHG0qFSxN/building-beforebell-for-agents-for-humans-autonomous-school-coverage-with-human-judgment)** · **[View the architecture](#architecture)** · **[See the operational proof](#operational-evidence-instead-of-hidden-reasoning)**
 
 Built for the **Agents for Humans Hackathon 2026** with **Strands Agents SDK, Amazon Bedrock, Amazon Bedrock AgentCore Runtime, and Amazon DynamoDB**.
 
